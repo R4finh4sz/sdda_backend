@@ -1,18 +1,23 @@
 import dotenv from 'dotenv';
 import { app } from './app.js';
-import { initDatabase } from './config/database.js';
+import { SeedService } from './services/seed/SeedService.js';
 
 dotenv.config();
 
-const PORT = process.env.PORT || 3333;
+const PORT = Number(process.env.PORT) || 3333;
 
-// Inicializa a base de dados
-initDatabase();
+async function bootstrap() {
+  await SeedService.seedDefaultUser();
 
-// Inicializa o servidor HTTP
-app.listen(PORT, () => {
-  console.log(`🚀 Servidor rodando na porta ${PORT}`);
-  console.log(`📡 URL base: http://localhost:${PORT}`);
-  console.log(`🩺 Health check: http://localhost:${PORT}/health`);
+  app.listen(PORT, () => {
+    console.log(`🚀 Servidor rodando na porta ${PORT}`);
+    console.log(`📡 URL base: http://localhost:${PORT}`);
+    console.log(`🔐 Rota de Login: POST http://localhost:${PORT}/api/auth/login`);
+  });
+}
+
+bootstrap().catch((err) => {
+  console.error('Falha ao iniciar o servidor:', err);
+  process.exit(1);
 });
 

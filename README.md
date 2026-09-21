@@ -1,98 +1,76 @@
 # sdda_backend
 
-Backend em Node.js com TypeScript, Express, Zod, bcrypt e banco de dados SQLite embarcado (equivalente ao H2 no ecossistema Node.js).
+Backend em Node.js com TypeScript, Express, Zod, bcrypt, JWT e **Prisma ORM** com SQLite.
+Arquitetura limpa organizada com **controllers** e **services**.
 
 ## 🚀 Tecnologias
 
 - **Node.js** (v22+)
 - **TypeScript**
 - **Express 5**
-- **Zod**: Validação e tipagem de esquemas de requisições
-- **bcryptjs**: Hash e verificação segura de senhas
-- **better-sqlite3**: Banco de dados relacional embarcado/em memória de alta performance
-- **tsx**: Execução de TypeScript em desenvolvimento com hot-reload
+- **Prisma ORM**: Modelagem de dados e queries tipadas
+- **SQLite**: Banco de dados relacional
+- **Zod**: Validação de requisições
+- **bcryptjs**: Criptografia de senhas e e-mails com hash unidirecional
+- **jsonwebtoken**: Emissão e verificação de tokens JWT
+- **tsx**: Execução de TypeScript com hot-reload e testes
 
-## 📁 Estrutura do Projeto
+## 📁 Estrutura de Pastas
 
 ```
 sdda_backend/
+├── prisma/
+│   └── schema.prisma             # Modelo Prisma e datasource SQLite
 ├── src/
-│   ├── config/
-│   │   └── database.ts            # Conexão e inicialização do banco SQLite
-│   ├── middlewares/
-│   │   └── validate.ts            # Middleware genérico de validação com Zod
-│   ├── modules/
-│   │   └── user/
-│   │       ├── user.schema.ts     # Schemas Zod (cadastro e login)
-│   │       ├── user.controller.ts # Handlers HTTP
-│   │       └── user.service.ts    # Lógica de negócio, bcrypt e queries
-│   ├── routes.ts                  # Registro das rotas
-│   ├── app.ts                     # Configuração da aplicação Express
-│   └── server.ts                  # Ponto de entrada do servidor
+│   ├── controllers/
+│   │   └── auth/
+│   │       └── AuthController.ts # Controlador HTTP de Login (validação Zod e resposta)
+│   ├── services/
+│   │   ├── auth/
+│   │   │   └── AuthService.ts    # Lógica de login com Prisma: compara hashes e emite JWT
+│   │   ├── hash/
+│   │   │   └── HashService.ts    # Criptografia e comparação com bcrypt
+│   │   ├── token/
+│   │   │   └── TokenService.ts   # Geração e validação de JWT
+│   │   └── seed/
+│   │       └── SeedService.ts    # Provisionamento do usuário inicial a partir da .env via Prisma
+│   ├── database/
+│   │   └── Database.ts           # Instância e exportação do PrismaClient
+│   ├── routes/
+│   │   └── auth.routes.ts        # Rotas /api/auth/login e /health
+│   ├── app.ts                    # Configuração da aplicação Express e middlewares
+│   └── server.ts                 # Ponto de entrada e inicialização do servidor
 ├── test/
-│   └── api.test.ts                # Testes de integração automatizados
+│   └── api.test.ts               # Suíte de testes de integração automatizados
 ├── .env.example
 ├── .gitignore
 ├── package.json
 └── tsconfig.json
 ```
 
-## 🛠️ Como Executar
+---
 
-### 1. Instalar dependências
-```bash
-npm install
+## ⚙️ Variáveis de Ambiente (.env)
+
+```env
+PORT=3333
+DATABASE_URL="file:./database.sqlite"
+JWT_SECRET=super_secret_jwt_key_sdda_backend_2026
+JWT_EXPIRES_IN=1d
+
+# Usuário Único Inicial (Provisionado automaticamente com e-mail e senha hasheados no banco)
+DEFAULT_USER_FULL_NAME=Jacira
+DEFAULT_USER_EMAIL=Jacira@bemestaranimal.com
+DEFAULT_USER_PASSWORD=Jacira@123
 ```
 
-### 2. Configurar variáveis de ambiente
-Copie o arquivo `.env.example` para `.env`:
-```bash
-cp .env.example .env
-```
+---
 
-### 3. Rodar em modo de desenvolvimento (hot-reload)
-```bash
-npm run dev
-```
-O servidor estará acessível em: `http://localhost:3333`
+## 🛠️ Comandos
 
-### 4. Executar os testes automatizados
-```bash
-npm test
-```
-
-### 5. Compilar para produção
-```bash
-npm run build
-npm start
-```
-
-## 🔌 Rotas da API
-
-### `GET /health`
-Verifica a integridade da API.
-
-### `POST /api/users/register`
-Cadastro de usuário com validação de esquema via Zod e criptografia de senha via bcrypt.
-- **Body:**
-  ```json
-  {
-    "name": "Nome do Usuário",
-    "email": "usuario@exemplo.com",
-    "password": "senhaSegura123"
-  }
-  ```
-
-### `POST /api/users/login`
-Autenticação de usuário com validação via Zod e checagem de hash de senha via bcrypt.
-- **Body:**
-  ```json
-  {
-    "email": "usuario@exemplo.com",
-    "password": "senhaSegura123"
-  }
-  ```
-
-### `GET /api/users`
-Lista todos os usuários cadastrados (sem expor hashes de senhas).
-
+- **Desenvolvimento:** `npm run dev`
+- **Sincronizar Banco (Prisma):** `npx prisma db push`
+- **Visualizar Banco (Prisma Studio):** `npx prisma studio`
+- **Executar Testes:** `npm test`
+- **Build de Produção:** `npm run build`
+- **Iniciar Produção:** `npm start`
